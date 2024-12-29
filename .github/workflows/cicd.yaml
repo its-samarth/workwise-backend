@@ -17,7 +17,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker image
         run: docker build -t itsamarth/workwise-backend .
-      - name: Publish image to docker hub
+      - name: Publish image to Docker hub
         run: docker push itsamarth/workwise-backend:latest
         
   deploy:
