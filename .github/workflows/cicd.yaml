@@ -16,17 +16,17 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker image
-        run: docker build -t workwise/backend .
+        run: docker build -t itsamarth/workwise-backend .
       - name: Publish image to docker hub
-        run: docker push workwise/backend:latest
+        run: docker push itsamarth/workwise-backend:latest
         
   deploy:
     needs: build
     runs-on: [aws-ec2]
     steps:
       - name: Pull image from docker hub
-        run: docker pull workwise/backend:latest
+        run: docker pull itsamarth/workwise-backend:latest
       - name: Delete old container
         run: docker rm -f nodejs-app-container
       - name: Run docker container
-        run: docker run -d -p 5000:5000 --name nodejs-app-container workwise/backend
+        run: docker run -d -p 5000:5000 --name nodejs-app-container itsamarth/workwise-backend
