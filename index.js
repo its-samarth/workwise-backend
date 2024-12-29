@@ -9,6 +9,9 @@ app.use(cors());
 app.use(express.json());
 
 // Basic route
+app.get('/', (req, res) => {
+    res.send('Welcome to Workwise Backend!');
+});
 app.get('/hello', (req, res) => {
   res.send('Hello from backend');
 });
