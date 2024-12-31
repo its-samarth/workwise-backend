@@ -144,7 +144,7 @@ router.post('/reset', async (req, res) => {
         }
       });
 
-      // Re-initialize   seat numbers if needed
+      // Re-initialize seat numbers if needed
       const seats = await prisma.seat.findMany({
         orderBy: [
           { rowNumber: 'asc' },
