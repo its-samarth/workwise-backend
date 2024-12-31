@@ -130,4 +130,62 @@ router.post('/bookings/:id/cancel', async (req, res) => {
   }
 });
 
+// Reset all seats and bookings
+router.post('/reset', async (req, res) => {
+  try {
+    await prisma.$transaction(async (prisma) => {
+      // Delete all bookings
+      await prisma.booking.deleteMany({});
+      
+      // Reset all seats to unbooked state
+      await prisma.seat.updateMany({
+        data: {
+          isBooked: false
+        }
+      });
+
+      // Re-initialize seat numbers if needed
+      const seats = await prisma.seat.findMany({
+        orderBy: [
+          { rowNumber: 'asc' },
+          { seatNumber: 'asc' }
+        ]
+      });
+
+      if (seats.length === 0) {
+        const seatsData = [];
+        let seatNumber = 1;
+
+        // Create 11 rows of 7 seats
+        for (let row = 1; row <= 11; row++) {
+          for (let seatInRow = 1; seatInRow <= 7; seatInRow++) {
+            seatsData.push({
+              seatNumber: seatNumber++,
+              rowNumber: row,
+              isBooked: false
+            });
+          }
+        }
+
+        // Create last row with 3 seats
+        for (let seatInRow = 1; seatInRow <= 3; seatInRow++) {
+          seatsData.push({
+            seatNumber: seatNumber++,
+            rowNumber: 12,
+            isBooked: false
+          });
+        }
+
+        await prisma.seat.createMany({
+          data: seatsData
+        });
+      }
+    });
+
+    res.json({ message: 'System reset successful' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
