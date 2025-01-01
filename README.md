@@ -54,6 +54,14 @@ POST   routes//api/booking/:bookingid/cancel      # Cancel booking
 POST   routes//api/reset               # Reset all seats
 ```
 
+### API Endpoints
+<img width="923" alt="prod bookseats" src="https://github.com/user-attachments/assets/738b8ff9-78d8-48b4-a5b7-e2795a20856a" />
+<img width="983" alt="prod reset system" src="https://github.com/user-attachments/assets/78d6f3ad-ddce-4457-8b63-e1b79f183ba7" />
+<img width="956" alt="prod getseats" src="https://github.com/user-attachments/assets/bc52c73c-ce61-47f4-9a4d-87e87f65f4be" />
+<img width="914" alt="prod cancelseats" src="https://github.com/user-attachments/assets/132a476b-11bf-484c-9d3b-8f5740ef7040" />
+
+
+
 ## API Endpoints
 
 ### Get All Seats
