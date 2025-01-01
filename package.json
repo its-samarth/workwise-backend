@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "build": "npm install && npm run prisma:generate",
     "start": "node src/index.js",
+    "prisma:generate": "prisma generate",
     "dev": "nodemon src/index.js"
   },
   "keywords": [],
