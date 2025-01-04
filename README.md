@@ -1,6 +1,12 @@
 
 ## Backend
+### Backend (Render)
+- Deployed at: https://workwise-backend-566v.onrender.com/
+- Auto-deploys from main branch
 
+### Frontend (Production)
+- Deployed at: https://www.samarthprojecttrial.online/train
+- Auto-deploys from aws amplify
 ### Tech Stack
 - Node.js
 - Express.js
@@ -122,13 +128,7 @@ Response:
 
 
 
-### Backend (Render)
-- Deployed at: https://workwise-backend-566v.onrender.com/
-- Auto-deploys from main branch
 
-### Frontend (Production)
-- Deployed at: https://www.samarthprojecttrial.online/train
-- Auto-deploys from aws amplify
 
 ## Business Logic
 
