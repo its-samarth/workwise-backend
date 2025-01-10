@@ -18,7 +18,6 @@ router.get('/seats', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-
 // Book seats
 router.post('/bookings', async (req, res) => {
   try {
@@ -36,6 +35,7 @@ router.post('/bookings', async (req, res) => {
       ]
     });
 
+    
     const seatsByRow = availableSeats.reduce((acc, seat) => {
       if (!acc[seat.rowNumber]) acc[seat.rowNumber] = [];
       acc[seat.rowNumber].push(seat);
@@ -43,20 +43,28 @@ router.post('/bookings', async (req, res) => {
     }, {});
 
     let seatsToBook = [];
+    
+    
     for (const [rowNum, seats] of Object.entries(seatsByRow)) {
-      if (seats.length >= numberOfSeats) {
-        seatsToBook = seats.slice(0, numberOfSeats);
+      const consecutiveSeats = findConsecutiveSeats(seats, numberOfSeats);
+      if (consecutiveSeats.length === numberOfSeats) {
+        seatsToBook = consecutiveSeats;
         break;
       }
     }
 
+   
     if (seatsToBook.length === 0) {
-      seatsToBook = availableSeats.slice(0, numberOfSeats);
+      const clusters = findBestSeatCluster(seatsByRow, numberOfSeats);
+      seatsToBook = clusters;
     }
 
     if (seatsToBook.length < numberOfSeats) {
       return res.status(400).json({ error: 'Not enough seats available' });
     }
+
+   
+    seatsToBook = seatsToBook.slice(0, numberOfSeats);
 
     const booking = await prisma.$transaction(async (prisma) => {
       const booking = await prisma.booking.create({
@@ -88,6 +96,80 @@ router.post('/bookings', async (req, res) => {
   }
 });
 
+function findConsecutiveSeats(seats, numberOfSeats) {
+  if (seats.length < numberOfSeats) return [];
+  
+  const sortedSeats = [...seats].sort((a, b) => a.seatNumber - b.seatNumber);
+  let consecutive = [sortedSeats[0]];
+  
+  for (let i = 1; i < sortedSeats.length; i++) {
+    if (sortedSeats[i].seatNumber === consecutive[consecutive.length - 1].seatNumber + 1) {
+      consecutive.push(sortedSeats[i]);
+      if (consecutive.length === numberOfSeats) {
+        return consecutive;
+      }
+    } else {
+      consecutive = [sortedSeats[i]];
+    }
+  }
+  
+  return [];
+}
+
+function findBestSeatCluster(seatsByRow, numberOfSeats) {
+  const rowNumbers = Object.keys(seatsByRow).map(Number).sort((a, b) => a - b);
+  let bestCluster = [];
+  let bestScore = Infinity;
+
+  
+  for (let startRowIndex = 0; startRowIndex < rowNumbers.length; startRowIndex++) {
+    let currentCluster = [];
+    let remainingSeats = numberOfSeats;
+    let currentRowIndex = startRowIndex;
+
+
+    while (remainingSeats > 0 && currentRowIndex < rowNumbers.length) {
+      const currentRow = rowNumbers[currentRowIndex];
+      const availableInRow = seatsByRow[currentRow];
+      
+      if (availableInRow && availableInRow.length > 0) {
+        const sortedSeats = availableInRow.sort((a, b) => a.seatNumber - b.seatNumber);
+        const seatsToTake = Math.min(remainingSeats, sortedSeats.length);
+        currentCluster = [...currentCluster, ...sortedSeats.slice(0, seatsToTake)];
+        remainingSeats -= seatsToTake;
+      }
+      
+      currentRowIndex++;
+    }
+
+    if (currentCluster.length === numberOfSeats) {
+      const score = calculateClusterScore(currentCluster);
+      if (score < bestScore) {
+        bestScore = score;
+        bestCluster = currentCluster;
+      }
+    }
+  }
+
+  return bestCluster;
+}
+
+function calculateClusterScore(cluster) {
+  let score = 0;
+  
+ 
+  const centerRow = cluster.reduce((sum, seat) => sum + seat.rowNumber, 0) / cluster.length;
+  const centerSeat = cluster.reduce((sum, seat) => sum + seat.seatNumber, 0) / cluster.length;
+
+
+  for (const seat of cluster) {
+    const rowDist = Math.pow(seat.rowNumber - centerRow, 2);
+    const seatDist = Math.pow(seat.seatNumber - centerSeat, 2);
+    score += rowDist + seatDist;
+  }
+
+  return score;
+}
 // Cancel booking
 router.post('/bookings/:id/cancel', async (req, res) => {
   try {
